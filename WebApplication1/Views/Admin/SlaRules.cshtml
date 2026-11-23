@@ -1,0 +1,45 @@
+﻿@model ServiceDesk.Web.ViewModels.SlaRulesViewModel
+@{
+    ViewData["Title"] = "Правила SLA";
+}
+
+<h1>Правила SLA</h1>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Приоритет</th>
+            <th>Время реакции (мин)</th>
+            <th>Время решения (мин)</th>
+            <th>Активно</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var rule in Model.Rules)
+        {
+            <tr>
+                <form asp-action="UpdateSlaRule" asp-route-id="@rule.Id" method="post">
+                    @Html.AntiForgeryToken()
+                <td>@rule.PriorityName</td>
+                <td><input type="number" name="ResponseTimeMin" value="@rule.ResponseTimeMin" class="form-control" min="1" /></td>
+                <td><input type="number" name="ResolutionTimeMin" value="@rule.ResolutionTimeMin" class="form-control" min="1" /></td>
+                <td>
+                    <input type="checkbox" name="IsActive" value="true" class="form-check-input"
+                           @(rule.IsActive ? "checked" : "") />
+                </td>
+                <td><button type="submit" class="btn btn-sm btn-primary">Сохранить</button></td>
+                </form>
+            </tr>
+        }
+    </tbody>
+</table>

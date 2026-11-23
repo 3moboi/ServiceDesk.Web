@@ -1,0 +1,113 @@
+﻿@model ServiceDesk.Web.ViewModels.ReportViewModel
+@{
+    ViewData["Title"] = "Отчёты";
+}
+
+<h1>Отчёты по заявкам</h1>
+
+<form method="get" asp-action="Index" class="row g-2 mb-4">
+    <div class="col-md-3">
+        <label class="form-label">Период с</label>
+        <input type="date" name="from" value="@Model.From.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-md-3">
+        <label class="form-label">Период по</label>
+        <input type="date" name="to" value="@Model.To.ToString("yyyy-MM-dd")" class="form-control" />
+    </div>
+    <div class="col-md-2 d-flex align-items-end">
+        <button type="submit" class="btn btn-primary w-100">Сформировать</button>
+    </div>
+</form>
+
+@if (Model.Report.TotalClosed == 0)
+{
+    <div class="alert alert-info">За выбранный период закрытых заявок нет. Отчёт не может быть сформирован.</div>
+}
+else
+{
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h5 class="card-title">Закрыто в срок</h5>
+                    <p class="display-4">@Model.Report.OnTimePercentage.ToString("F1")%</p>
+                    <p class="text-muted">из @Model.Report.TotalClosed закрытых заявок</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Отчёт по категориям -->
+        <div class="col-md-6 mb-4">
+            <h3>Заявки по категориям</h3>
+            @if (Model.Report.ByCategory.Count == 0)
+            {
+                <p class="text-muted">Данных нет</p>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Категория</th>
+                            <th class="text-end">Количество</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Report.ByCategory)
+                        {
+                            <tr>
+                                <td>@item.CategoryName</td>
+                                <td class="text-end">@item.Count</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td>Итого</td>
+                            <td class="text-end">@Model.Report.ByCategory.Sum(x => x.Count)</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            }
+        </div>
+
+        <!-- Отчёт по исполнителям -->
+        <div class="col-md-6 mb-4">
+            <h3>Заявки по исполнителям</h3>
+            @if (Model.Report.ByAssignee.Count == 0)
+            {
+                <p class="text-muted">Данных нет</p>
+            }
+            else
+            {
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Исполнитель</th>
+                            <th class="text-end">Количество</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.Report.ByAssignee)
+                        {
+                            <tr>
+                                <td>@item.AssigneeName</td>
+                                <td class="text-end">@item.Count</td>
+                            </tr>
+                        }
+                    </tbody>
+                    <tfoot>
+                        <tr class="fw-bold">
+                            <td>Итого</td>
+                            <td class="text-end">@Model.Report.ByAssignee.Sum(x => x.Count)</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            }
+        </div>
+    </div>
+}
+
+<a asp-controller="Tickets" asp-action="Index" class="btn btn-link">← К списку заявок</a>

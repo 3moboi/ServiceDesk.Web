@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.37906.3
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDesk.Web", "WebApplication1\ServiceDesk.Web.csproj", "{87EC56DB-06B7-4D00-9FF1-3FAEF2C575D5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDesk.Api", "ServiceDesk.Api\ServiceDesk.Api.csproj", "{F6DCBC18-7100-48D5-9E57-561DD62611F1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{87EC56DB-06B7-4D00-9FF1-3FAEF2C575D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87EC56DB-06B7-4D00-9FF1-3FAEF2C575D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87EC56DB-06B7-4D00-9FF1-3FAEF2C575D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87EC56DB-06B7-4D00-9FF1-3FAEF2C575D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6DCBC18-7100-48D5-9E57-561DD62611F1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6DCBC18-7100-48D5-9E57-561DD62611F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6DCBC18-7100-48D5-9E57-561DD62611F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6DCBC18-7100-48D5-9E57-561DD62611F1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {9E2A534E-DEB5-4861-913F-7C3F58E1A6D8}
+	EndGlobalSection
+EndGlobal

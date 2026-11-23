@@ -1,0 +1,119 @@
+﻿@model ServiceDesk.Web.ViewModels.TicketDetailsViewModel
+@{
+    ViewData["Title"] = $"Заявка №{Model.Ticket.Id}";
+}
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+@if (TempData["Error"] is string error)
+{
+    <div class="alert alert-danger">@error</div>
+}
+
+<h1>Заявка №@Model.Ticket.Id: @Model.Ticket.Subject</h1>
+
+<dl class="row">
+    <dt class="col-sm-3">Описание</dt>
+    <dd class="col-sm-9">@Model.Ticket.Description</dd>
+
+    <dt class="col-sm-3">Категория</dt>
+    <dd class="col-sm-9">@Model.Ticket.CategoryName</dd>
+
+    <dt class="col-sm-3">Приоритет</dt>
+    <dd class="col-sm-9">@Model.Ticket.PriorityName</dd>
+
+    <dt class="col-sm-3">Статус</dt>
+    <dd class="col-sm-9">@Model.Ticket.StatusName</dd>
+
+    <dt class="col-sm-3">Заявитель</dt>
+    <dd class="col-sm-9">@Model.Ticket.RequesterName</dd>
+
+    <dt class="col-sm-3">Исполнитель</dt>
+    <dd class="col-sm-9">@(Model.Ticket.AssigneeName ?? "не назначен")</dd>
+
+    <dt class="col-sm-3">Создана</dt>
+    <dd class="col-sm-9">@Model.Ticket.CreatedAt.ToString("dd.MM.yyyy HH:mm")</dd>
+
+    <dt class="col-sm-3">Плановый срок</dt>
+    <dd class="col-sm-9">@(Model.Ticket.DueDate?.ToString("dd.MM.yyyy HH:mm") ?? "—")</dd>
+</dl>
+
+@if (Model.CanChangeStatus)
+{
+    <h3>Изменить статус</h3>
+    <form asp-action="ChangeStatus" asp-route-id="@Model.Ticket.Id" method="post" class="row g-2 mb-4">
+        @Html.AntiForgeryToken()
+        <div class="col-md-4">
+            <select name="NewStatusId" class="form-select">
+                <option value="2">В работе</option>
+                <option value="3">Решена</option>
+                <option value="4">Закрыта</option>
+            </select>
+        </div>
+        <div class="col-md-6">
+            <input type="text" name="Comment" class="form-control" placeholder="Комментарий к изменению" />
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-primary w-100">Применить</button>
+        </div>
+    </form>
+}
+
+<h3>Комментарии</h3>
+@if (Model.Ticket.Comments.Count == 0)
+{
+    <p class="text-muted">Комментариев нет</p>
+}
+else
+{
+    <ul class="list-group mb-3">
+        @foreach (var c in Model.Ticket.Comments)
+        {
+            if (c.IsInternal && !Model.CanSeeInternalComments) { continue; }
+            <li class="list-group-item @(c.IsInternal ? "list-group-item-warning" : "")">
+                <strong>@c.AuthorName</strong>
+                <small class="text-muted">@c.CreatedAt.ToString("dd.MM.yyyy HH:mm")</small>
+                @if (c.IsInternal)
+                {
+                    <span class="badge bg-warning text-dark">внутренний</span>
+                }
+                <div>@c.Text</div>
+            </li>
+        }
+    </ul>
+}
+
+<form asp-action="AddComment" asp-route-id="@Model.Ticket.Id" method="post" class="mb-4">
+    @Html.AntiForgeryToken()
+    <textarea name="Text" class="form-control mb-2" rows="3" placeholder="Текст комментария"></textarea>
+    @if (Model.CanSeeInternalComments)
+    {
+        <label class="form-check mb-2">
+            <input type="checkbox" name="IsInternal" value="true" class="form-check-input" />
+            Внутренний комментарий
+        </label>
+    }
+    <button type="submit" class="btn btn-secondary">Добавить комментарий</button>
+</form>
+
+<h3>История статусов</h3>
+<table class="table table-sm">
+    <thead>
+        <tr><th>Было</th><th>Стало</th><th>Изменил</th><th>Дата</th></tr>
+    </thead>
+    <tbody>
+        @foreach (var h in Model.Ticket.History)
+        {
+            <tr>
+                <td>@(h.OldStatusName ?? "—")</td>
+                <td>@h.NewStatusName</td>
+                <td>@h.ChangedByName</td>
+                <td>@h.ChangedAt.ToString("dd.MM.yyyy HH:mm")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Index" class="btn btn-link">← К списку заявок</a>

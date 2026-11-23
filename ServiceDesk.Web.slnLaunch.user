@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "Новый профиль",
+    "Projects": [
+      {
+        "Path": "WebApplication1\\ServiceDesk.Web.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ServiceDesk.Api\\ServiceDesk.Api.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

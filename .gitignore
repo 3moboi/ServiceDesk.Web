@@ -1,0 +1,10 @@
+﻿################################################################################
+# Данный GITIGNORE-файл был автоматически создан Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs
+/ServiceDesk.Api/bin/Debug/net8.0
+/ServiceDesk.Api/obj
+/WebApplication1/bin/Debug/net8.0
+/WebApplication1/obj
+/WebApplication1/wwwroot

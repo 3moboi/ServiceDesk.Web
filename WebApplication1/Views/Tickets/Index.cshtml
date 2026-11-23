@@ -1,0 +1,83 @@
+﻿@model ServiceDesk.Web.ViewModels.TicketListViewModel
+@{
+    ViewData["Title"] = "Список заявок";
+}
+
+<h1>Заявки</h1>
+
+@if (TempData["Success"] is string success)
+{
+    <div class="alert alert-success">@success</div>
+}
+
+<form method="get" asp-action="Index" class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select name="StatusId" class="form-select" asp-items="@(new SelectList(
+                                                                new[] {
+                                                                    new { Id = 1, Name = "Новая" },
+                                                                    new { Id = 2, Name = "В работе" },
+                                                                    new { Id = 3, Name = "Решена" },
+                                                                    new { Id = 4, Name = "Закрыта" }
+                                                                }, "Id", "Name", Model.Filter.StatusId))">
+            <option value="">Все статусы</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="CategoryId" class="form-select"
+                asp-items="@(new SelectList(Model.Categories, "Id", "Name", Model.Filter.CategoryId))">
+            <option value="">Все категории</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <select name="PriorityId" class="form-select"
+                asp-items="@(new SelectList(Model.Priorities, "Id", "Name", Model.Filter.PriorityId))">
+            <option value="">Все приоритеты</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <input type="text" name="Search" value="@Model.Filter.Search"
+               class="form-control" placeholder="Поиск по теме" />
+    </div>
+    <div class="col-md-1">
+        <button type="submit" class="btn btn-primary w-100">Найти</button>
+    </div>
+</form>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>№</th>
+            <th>Тема</th>
+            <th>Категория</th>
+            <th>Приоритет</th>
+            <th>Статус</th>
+            <th>Исполнитель</th>
+            <th>Создана</th>
+            <th>Плановый срок</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Tickets.Count == 0)
+        {
+            <tr><td colspan="8" class="text-center text-muted">Заявки не найдены</td></tr>
+        }
+        else
+        {
+            foreach (var t in Model.Tickets)
+            {
+                <tr>
+                    <td>@t.Id</td>
+                    <td><a asp-action="Details" asp-route-id="@t.Id">@t.Subject</a></td>
+                    <td>@t.CategoryName</td>
+                    <td>@t.PriorityName</td>
+                    <td>@t.StatusName</td>
+                    <td>@(t.AssigneeName ?? "—")</td>
+                    <td>@t.CreatedAt.ToString("dd.MM.yyyy HH:mm")</td>
+                    <td>@(t.DueDate?.ToString("dd.MM.yyyy HH:mm") ?? "—")</td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+<a class="btn btn-success" asp-action="Create">Создать заявку</a>
