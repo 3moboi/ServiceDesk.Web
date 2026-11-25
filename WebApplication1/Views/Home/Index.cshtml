@@ -1,8 +1,27 @@
 ﻿@{
-    ViewData["Title"] = "Home Page";
+    ViewData["Title"] = "Вход в систему";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mt-5">
+    <h1 class="display-4">Service Desk</h1>
+    <p class="lead">Информационная система учёта заявок технической поддержки</p>
+
+    <div class="card mt-5 mx-auto" style="max-width: 400px;">
+        <div class="card-header bg-primary text-white">
+            <h4>Вход в систему</h4>
+        </div>
+        <div class="card-body">
+            <form asp-controller="Home" asp-action="Login" method="post">
+                <div class="mb-3">
+                    <label class="form-label">Выберите пользователя:</label>
+                    <select name="userId" class="form-select">
+                        <option value="1">Иванов Иван (Заявитель)</option>
+                        <option value="2">Петров Петр (Исполнитель)</option>
+                        <option value="3">Сидоров Сидор (Администратор)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success w-100">Войти</button>
+            </form>
+        </div>
+    </div>
 </div>

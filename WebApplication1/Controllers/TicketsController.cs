@@ -39,7 +39,8 @@ public class TicketsController : Controller
         {
             Ticket = ticket,
             CanChangeStatus = true, // в реальном проекте — на основе роли
-            CanSeeInternalComments = true
+            CanSeeInternalComments = true,
+            Executors = await _api.GetExecutorsAsync(ct)
         };
         return View(vm);
     }

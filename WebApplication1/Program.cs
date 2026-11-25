@@ -4,6 +4,15 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllersWithViews();
 
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromMinutes(60);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+});
+builder.Services.AddHttpContextAccessor(); // Ќужно дл€ чтени€ сессии в ApiClient
+
 // –егистраци€ типизированного клиента веб-сервиса через IHttpClientFactory
 builder.Services.AddHttpClient<IServiceDeskApiClient, ServiceDeskApiClient>(client =>
 {
@@ -23,6 +32,7 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseSession();
 app.UseRouting();
 
 app.MapControllerRoute(

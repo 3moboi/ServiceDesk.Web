@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ServiceDesk.Api.Repositories;
 
 namespace ServiceDesk.Api.Controllers;
 
@@ -6,18 +7,13 @@ namespace ServiceDesk.Api.Controllers;
 [Route("api/[controller]")]
 public class CategoriesController : ControllerBase
 {
-    // GET: api/categories
+    private readonly ICategoryRepository _repo;
+    public CategoriesController(ICategoryRepository repo) => _repo = repo;
+
     [HttpGet]
-    public IActionResult Get()
+    public async Task<IActionResult> Get()
     {
-        // Возвращаем тестовые категории, чтобы выпадающий список в UI не был пустым
-        var categories = new List<object>
-        {
-            new { Id = 1, Name = "Оборудование" },
-            new { Id = 2, Name = "Программное обеспечение" },
-            new { Id = 3, Name = "Сеть" },
-            new { Id = 4, Name = "Учётные записи" }
-        };
-        return Ok(categories);
+        var categories = await _repo.GetAllAsync();
+        return Ok(categories.Select(c => new { c.Id, c.Name }));
     }
 }

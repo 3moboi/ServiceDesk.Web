@@ -1,4 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ServiceDesk.Api.DTOs;
+using ServiceDesk.Api.Repositories;
+using ServiceDesk.Api.Services;
 
 namespace ServiceDesk.Api.Controllers;
 
@@ -6,45 +9,121 @@ namespace ServiceDesk.Api.Controllers;
 [Route("api/[controller]")]
 public class TicketsController : ControllerBase
 {
-    [HttpGet]
-    public IActionResult Get() => Ok(new List<object>());
+    private readonly ITicketService _ticketService;
+    private readonly ITicketRepository _ticketRepo;
+    private readonly IUserRepository _userRepo;
 
-    //Чтобы посмотреть заявку в браузере открыть https://localhost:7197/Tickets/Details/1
-    [HttpGet("{id}")]
-    public IActionResult GetById(int id)
+    // Временно считаем, что текущий пользователь - ID 1 (заявитель)
+    // Для реального проекта тут брался бы ID из токена авторизации
+    private int CurrentUserId
     {
-        // Временная заглушка с тестовыми данными для проверки интерфейса
-        var ticket = new
+        get
         {
-            Id = id,
-            Subject = "Не включается монитор",
-            Description = "При нажатии кнопки питания монитор не реагирует, индикатор не горит.",
-            CategoryName = "Оборудование",
-            PriorityName = "Высокий",
-            StatusName = "В работе",
-            StatusId = 2,
-            RequesterName = "Иванов Иван",
-            AssigneeName = "Петров Петр",
-            CreatedAt = DateTime.Now.AddHours(-2),
-            AssignedAt = DateTime.Now.AddHours(-1),
-            DueDate = DateTime.Now.AddHours(4),
-            ClosedAt = (DateTime?)null,
-            Comments = new List<object>
-        {
-            new { Id = 1, AuthorName = "Иванов Иван", Text = "Проблема появилась утром.", CreatedAt = DateTime.Now.AddHours(-2), IsInternal = false },
-            new { Id = 2, AuthorName = "Петров Петр", Text = "Проверяю кабели питания.", CreatedAt = DateTime.Now.AddHours(-1), IsInternal = true },
-            new { Id = 3, AuthorName = "Петров Петр", Text = "Вышел из строя блок питания, меняю.", CreatedAt = DateTime.Now.AddMinutes(-30), IsInternal = false }
-        },
-            History = new List<object>
-        {
-            new { OldStatusName = (string?)null, NewStatusName = "Новая", ChangedByName = "Иванов Иван", ChangedAt = DateTime.Now.AddHours(-2) },
-            new { OldStatusName = "Новая", NewStatusName = "В работе", ChangedByName = "Петров Петр", ChangedAt = DateTime.Now.AddHours(-1) }
+            if (Request.Headers.TryGetValue("X-User-Id", out var idStr) && int.TryParse(idStr, out var id))
+                return id;
+            return 1; // По умолчанию
         }
-        };
-
-        return Ok(ticket);
     }
 
-    [HttpGet("categories")]
-    public IActionResult GetCategories() => Ok(new List<object>());
+    public TicketsController(ITicketService ticketService, ITicketRepository ticketRepo, IUserRepository userRepo)
+    {
+        _ticketService = ticketService;
+        _ticketRepo = ticketRepo;
+        _userRepo = userRepo;
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Get([FromQuery] int? statusId, [FromQuery] int? categoryId, [FromQuery] int? priorityId, [FromQuery] string? search)
+    {
+        var currentUser = await _userRepo.GetByIdAsync(CurrentUserId);
+        if (currentUser == null) return Unauthorized();
+
+        var tickets = await _ticketRepo.GetFilteredAsync(statusId, categoryId, priorityId, search);
+
+        // Фильтрация по ролям
+        if (currentUser.RoleId == 1) // Заявитель
+        {
+            tickets = tickets.Where(t => t.RequesterId == CurrentUserId).ToList();
+        }
+        else if (currentUser.RoleId == 2) // Исполнитель
+        {
+            tickets = tickets.Where(t => t.AssigneeId == CurrentUserId).ToList();
+        }
+        // Если RoleId == 3 (Администратор), он видит все заявки без фильтрации
+
+        var result = tickets.Select(t => new TicketListItemDto
+        {
+            Id = t.Id,
+            Subject = t.Subject,
+            CategoryName = t.Category?.Name ?? "",
+            PriorityName = t.Priority?.Name ?? "",
+            StatusName = t.Status?.Name ?? "",
+            AssigneeName = t.Assignee != null ? $"{t.Assignee.LastName} {t.Assignee.FirstName}" : null,
+            CreatedAt = t.CreatedAt,
+            DueDate = t.DueDate
+        });
+        return Ok(result);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<IActionResult> GetById(int id)
+    {
+        var t = await _ticketRepo.GetByIdAsync(id);
+        if (t == null) return NotFound();
+
+        var result = new TicketDetailsDto
+        {
+            Id = t.Id,
+            Subject = t.Subject,
+            Description = t.Description,
+            CategoryName = t.Category?.Name ?? "",
+            PriorityName = t.Priority?.Name ?? "",
+            StatusName = t.Status?.Name ?? "",
+            StatusId = t.StatusId,
+            RequesterName = $"{t.Requester?.LastName} {t.Requester?.FirstName}",
+            AssigneeName = t.Assignee != null ? $"{t.Assignee.LastName} {t.Assignee.FirstName}" : null,
+            CreatedAt = t.CreatedAt,
+            AssignedAt = t.AssignedAt,
+            DueDate = t.DueDate,
+            ClosedAt = t.ClosedAt,
+            Comments = t.Comments.Select(c => new CommentDto
+            {
+                Id = c.Id,
+                AuthorName = $"{c.Author?.LastName} {c.Author?.FirstName}",
+                Text = c.Text,
+                CreatedAt = c.CreatedAt,
+                IsInternal = c.IsInternal
+            }).ToList(),
+            History = t.History.Select(h => new StatusHistoryDto
+            {
+                OldStatusName = h.OldStatus?.Name,
+                NewStatusName = h.NewStatus?.Name ?? "",
+                ChangedByName = $"{h.ChangedByUser?.LastName} {h.ChangedByUser?.FirstName}",
+                ChangedAt = h.ChangedAt
+            }).ToList()
+        };
+        return Ok(result);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create([FromBody] CreateTicketDto dto)
+    {
+        if (!ModelState.IsValid) return ValidationProblem(ModelState);
+        var id = await _ticketService.CreateAsync(dto, CurrentUserId);
+        return Ok(new { Id = id });
+    }
+
+    [HttpPut("{id}/status")]
+    public async Task<IActionResult> UpdateStatus(int id, [FromBody] UpdateStatusDto dto)
+    {
+        await _ticketService.ChangeStatusAsync(id, dto.NewStatusId, dto.Comment, dto.AssigneeId, CurrentUserId);
+        return NoContent();
+    }
+
+    [HttpPost("{id}/comments")]
+    public async Task<IActionResult> AddComment(int id, [FromBody] CreateCommentDto dto)
+    {
+        await _ticketService.AddCommentAsync(id, dto, CurrentUserId);
+        return NoContent();
+    }
 }

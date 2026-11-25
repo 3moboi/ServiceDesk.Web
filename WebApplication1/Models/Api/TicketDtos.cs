@@ -73,6 +73,7 @@ public class UpdateStatusDto
 {
     public int NewStatusId { get; set; }
     public string? Comment { get; set; }
+    public int? AssigneeId { get; set; }
 }
 
 public class CreateCommentDto

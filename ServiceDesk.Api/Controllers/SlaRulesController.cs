@@ -1,4 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ServiceDesk.Api.Repositories;
+using ServiceDesk.Api.DTOs;
+using ServiceDesk.Api.Data; // Для AppDbContext, чтобы сохранять изменения
+using Microsoft.EntityFrameworkCore;
 
 namespace ServiceDesk.Api.Controllers;
 
@@ -6,24 +10,47 @@ namespace ServiceDesk.Api.Controllers;
 [Route("api/[controller]")]
 public class SlaRulesController : ControllerBase
 {
-    // GET: api/slarules
-    [HttpGet]
-    public IActionResult Get()
+    private readonly ISlaRuleRepository _repo;
+    private readonly AppDbContext _context;
+
+    public SlaRulesController(ISlaRuleRepository repo, AppDbContext context)
     {
-        var rules = new List<object>
-        {
-            new { Id = 1, PriorityName = "Низкий", ResponseTimeMin = 480, ResolutionTimeMin = 2880, IsActive = true },
-            new { Id = 2, PriorityName = "Средний", ResponseTimeMin = 240, ResolutionTimeMin = 1440, IsActive = true },
-            new { Id = 3, PriorityName = "Высокий", ResponseTimeMin = 60, ResolutionTimeMin = 480, IsActive = true },
-            new { Id = 4, PriorityName = "Критический", ResponseTimeMin = 15, ResolutionTimeMin = 120, IsActive = true }
-        };
-        return Ok(rules);
+        _repo = repo;
+        _context = context;
     }
 
-    // PUT: api/slarules/5
-    [HttpPut("{id}")]
-    public IActionResult Update(int id, [FromBody] object dto)
+    [HttpGet]
+    public async Task<IActionResult> Get()
     {
+        var rules = await _repo.GetAllAsync();
+
+        var result = rules.Select(r => new
+        {
+            r.Id,
+            PriorityName = r.Priority?.Name ?? "Неизвестно",
+            r.ResponseTimeMin,
+            r.ResolutionTimeMin,
+            r.IsActive
+        });
+
+        return Ok(result);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateSlaRuleDto dto)
+    {
+        var rules = await _repo.GetAllAsync();
+        var rule = rules.FirstOrDefault(r => r.Id == id);
+
+        if (rule == null) return NotFound("Правило не найдено");
+
+        rule.ResponseTimeMin = dto.ResponseTimeMin;
+        rule.ResolutionTimeMin = dto.ResolutionTimeMin;
+        rule.IsActive = dto.IsActive;
+
+        await _repo.UpdateAsync(rule);
+        await _context.SaveChangesAsync();
+
         return NoContent();
     }
 }

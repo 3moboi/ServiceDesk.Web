@@ -42,20 +42,41 @@
 
 @if (Model.CanChangeStatus)
 {
-    <h3>Изменить статус</h3>
-    <form asp-action="ChangeStatus" asp-route-id="@Model.Ticket.Id" method="post" class="row g-2 mb-4">
+    <h3>Управление заявкой</h3>
+    <form asp-action="ChangeStatus" asp-route-id="@Model.Ticket.Id" method="post" class="row g-3 mb-4 border p-3 bg-light rounded">
         @Html.AntiForgeryToken()
+
+        <!-- Выбор исполнителя -->
         <div class="col-md-4">
+            <label class="form-label">Назначить исполнителя</label>
+            <select name="AssigneeId" class="form-select">
+                <option value="">— не назначен —</option>
+                @foreach (var exec in Model.Executors)
+                {
+                    // Если заявка уже назначена на кого-то, выбираем его по умолчанию
+                    var isSelected = Model.Ticket.AssigneeName != null && Model.Ticket.AssigneeName.Contains(exec.FullName);
+                    <option value="@exec.Id" selected="@isSelected">@exec.FullName</option>
+                }
+            </select>
+        </div>
+
+        <!-- Смена статуса -->
+        <div class="col-md-3">
+            <label class="form-label">Изменить статус</label>
             <select name="NewStatusId" class="form-select">
                 <option value="2">В работе</option>
                 <option value="3">Решена</option>
                 <option value="4">Закрыта</option>
             </select>
         </div>
-        <div class="col-md-6">
-            <input type="text" name="Comment" class="form-control" placeholder="Комментарий к изменению" />
+
+        <!-- Комментарий -->
+        <div class="col-md-3">
+            <label class="form-label">Комментарий</label>
+            <input type="text" name="Comment" class="form-control" placeholder="Необязательно" />
         </div>
-        <div class="col-md-2">
+
+        <div class="col-md-2 d-flex align-items-end">
             <button type="submit" class="btn btn-primary w-100">Применить</button>
         </div>
     </form>

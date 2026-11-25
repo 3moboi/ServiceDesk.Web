@@ -8,22 +8,42 @@ namespace ServiceDesk.Web.Services;
 public class ServiceDeskApiClient : IServiceDeskApiClient
 {
     private readonly HttpClient _http;
+    private readonly IHttpContextAccessor _httpContextAccessor;
 
-    public ServiceDeskApiClient(HttpClient http)
+    public ServiceDeskApiClient(HttpClient http, IHttpContextAccessor httpContextAccessor)
     {
         _http = http;
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    private void SetUserHeader()
+    {
+        var userId = _httpContextAccessor.HttpContext?.Session.GetInt32("UserId");
+        _http.DefaultRequestHeaders.Remove("X-User-Id"); // Удаляем старый заголовок
+        if (userId.HasValue)
+        {
+            _http.DefaultRequestHeaders.Add("X-User-Id", userId.Value.ToString());
+        }
     }
 
     public async Task<IReadOnlyList<TicketListItemDto>> GetTicketsAsync(
         TicketFilterDto filter, CancellationToken ct = default)
     {
+        SetUserHeader();
         var query = BuildQuery(filter);
         var result = await GetAsync<List<TicketListItemDto>>($"api/tickets{query}", ct);
         return result ?? new List<TicketListItemDto>();
     }
 
+    public async Task<IReadOnlyList<UserDto>> GetExecutorsAsync(CancellationToken ct = default)
+    {
+        SetUserHeader();
+        return await GetAsync<List<UserDto>>("api/users/executors", ct) ?? new();
+    }
+
     public async Task<TicketDetailsDto?> GetTicketByIdAsync(int id, CancellationToken ct = default)
     {
+        SetUserHeader();
         var response = await _http.GetAsync($"api/tickets/{id}", ct);
         if (response.StatusCode == HttpStatusCode.NotFound)
             return null;
@@ -34,6 +54,7 @@ public class ServiceDeskApiClient : IServiceDeskApiClient
 
     public async Task<int> CreateTicketAsync(CreateTicketDto dto, CancellationToken ct = default)
     {
+        SetUserHeader();
         var response = await _http.PostAsJsonAsync("api/tickets", dto, ct);
         await EnsureSuccessAsync(response);
 
@@ -46,40 +67,56 @@ public class ServiceDeskApiClient : IServiceDeskApiClient
 
     public async Task UpdateTicketStatusAsync(int id, UpdateStatusDto dto, CancellationToken ct = default)
     {
+        SetUserHeader();
         var response = await _http.PutAsJsonAsync($"api/tickets/{id}/status", dto, ct);
         await EnsureSuccessAsync(response);
     }
 
     public async Task AddCommentAsync(int id, CreateCommentDto dto, CancellationToken ct = default)
     {
+        SetUserHeader();
         var response = await _http.PostAsJsonAsync($"api/tickets/{id}/comments", dto, ct);
         await EnsureSuccessAsync(response);
     }
 
     public async Task<ReportDto> GetReportAsync(DateTime from, DateTime to, CancellationToken ct = default)
     {
+        SetUserHeader();
         var result = await GetAsync<ReportDto>(
             $"api/reports?from={from:yyyy-MM-dd}&to={to:yyyy-MM-dd}", ct);
         return result ?? new ReportDto();
     }
 
     public async Task<IReadOnlyList<CategoryDto>> GetCategoriesAsync(CancellationToken ct = default)
-        => await GetAsync<List<CategoryDto>>("api/categories", ct) ?? new();
+    {
+        SetUserHeader();
+        return await GetAsync<List<CategoryDto>>("api/categories", ct) ?? new();
+    }
 
     public async Task<IReadOnlyList<PriorityDto>> GetPrioritiesAsync(CancellationToken ct = default)
-        => await GetAsync<List<PriorityDto>>("api/priorities", ct) ?? new();
+    { 
+        SetUserHeader();
+        return await GetAsync<List<PriorityDto>>("api/priorities", ct) ?? new(); 
+    }
 
     public async Task<IReadOnlyList<SlaRuleDto>> GetSlaRulesAsync(CancellationToken ct = default)
-        => await GetAsync<List<SlaRuleDto>>("api/slarules", ct) ?? new();
+    { 
+        SetUserHeader();
+        return await GetAsync<List<SlaRuleDto>>("api/slarules", ct) ?? new(); 
+    }
 
     public async Task UpdateSlaRuleAsync(int id, UpdateSlaRuleDto dto, CancellationToken ct = default)
     {
+        SetUserHeader();
         var response = await _http.PutAsJsonAsync($"api/slarules/{id}", dto, ct);
         await EnsureSuccessAsync(response);
     }
 
     public async Task<IReadOnlyList<UserDto>> GetUsersAsync(CancellationToken ct = default)
-        => await GetAsync<List<UserDto>>("api/users", ct) ?? new();
+    {
+        SetUserHeader();
+        return await GetAsync<List<UserDto>>("api/users", ct) ?? new();
+    }
 
     private async Task<T?> GetAsync<T>(string url, CancellationToken ct)
     {

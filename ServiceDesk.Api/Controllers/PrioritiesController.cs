@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using ServiceDesk.Api.Repositories;
 
 namespace ServiceDesk.Api.Controllers;
 
@@ -6,18 +7,27 @@ namespace ServiceDesk.Api.Controllers;
 [Route("api/[controller]")]
 public class PrioritiesController : ControllerBase
 {
+
+    private readonly IPriorityRepository _repo;
+
+    public PrioritiesController(IPriorityRepository repo)
+    {
+        _repo = repo;
+    }
+
     // GET: api/priorities
     [HttpGet]
-    public IActionResult Get()
+    public async Task<IActionResult> Get()
     {
-        // Возвращаем тестовые приоритеты для выпадающего списка
-        var priorities = new List<object>
+        var priorities = await _repo.GetAllAsync();
+
+        // Возвращаем только Id и Name, чтобы не светить лишние поля (например, Weight)
+        var result = priorities.Select(p => new
         {
-            new { Id = 1, Name = "Низкий" },
-            new { Id = 2, Name = "Средний" },
-            new { Id = 3, Name = "Высокий" },
-            new { Id = 4, Name = "Критический" }
-        };
-        return Ok(priorities);
+            p.Id,
+            p.Name
+        });
+
+        return Ok(result);
     }
 }

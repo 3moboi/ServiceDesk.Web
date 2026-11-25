@@ -7,7 +7,9 @@ namespace ServiceDesk.Web.Services
         Task<IReadOnlyList<TicketListItemDto>> GetTicketsAsync(
         TicketFilterDto filter, CancellationToken ct = default);
 
-    Task<TicketDetailsDto?> GetTicketByIdAsync(int id, CancellationToken ct = default);
+        Task<IReadOnlyList<UserDto>> GetExecutorsAsync(CancellationToken ct = default);
+
+        Task<TicketDetailsDto?> GetTicketByIdAsync(int id, CancellationToken ct = default);
 
     Task<int> CreateTicketAsync(CreateTicketDto dto, CancellationToken ct = default);
 
