@@ -105,7 +105,16 @@ public class TicketsController : ControllerBase
         return Ok(result);
     }
 
+    /// <summary>
+    /// Регистрирует новую заявку в системе
+    /// </summary>
+    /// <param name="dto">Данные для создания заявки</param>
+    /// <returns>Идентификатор созданной заявки</returns>
+    /// <response code="201">Заявка успешно создана</response>
+    /// <response code="400">Некорректные данные или отсутствует правило SLA</response>
     [HttpPost]
+    [ProducesResponseType(typeof(CreatedTicketDto), StatusCodes.Status201Created)]
+    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> Create([FromBody] CreateTicketDto dto)
     {
         if (!ModelState.IsValid) return ValidationProblem(ModelState);
