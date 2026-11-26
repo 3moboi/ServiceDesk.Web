@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDesk.Web", "WebAppli
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDesk.Api", "ServiceDesk.Api\ServiceDesk.Api.csproj", "{F6DCBC18-7100-48D5-9E57-561DD62611F1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServiceDesk.Tests", "ServiceDesk.Tests\ServiceDesk.Tests.csproj", "{6A7C75AD-EBBA-47F4-B857-84D606CDAA02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{F6DCBC18-7100-48D5-9E57-561DD62611F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6DCBC18-7100-48D5-9E57-561DD62611F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6DCBC18-7100-48D5-9E57-561DD62611F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A7C75AD-EBBA-47F4-B857-84D606CDAA02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A7C75AD-EBBA-47F4-B857-84D606CDAA02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A7C75AD-EBBA-47F4-B857-84D606CDAA02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A7C75AD-EBBA-47F4-B857-84D606CDAA02}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

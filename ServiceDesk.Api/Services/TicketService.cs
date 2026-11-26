@@ -50,7 +50,10 @@ public class TicketService : ITicketService
             DueDate = dueDate
         };
 
-        await _ticketRepo.AddAsync(ticket);
+        //await _ticketRepo.AddAsync(ticket);
+        await _context.Tickets.AddAsync(ticket);
+        await _context.SaveChangesAsync();
+
         await _ticketRepo.AddStatusHistoryAsync(new TicketStatusHistory
         {
             Ticket = ticket,

@@ -8,3 +8,6 @@
 /WebApplication1/bin/Debug/net8.0
 /WebApplication1/obj
 /WebApplication1/wwwroot
+/coveragereport
+/ServiceDesk.Tests/bin/Debug/net8.0
+/ServiceDesk.Tests/obj
